@@ -9,7 +9,7 @@ Created on Mon Nov 27 18:01:14 2023
 HEIGHT = 500
 WIDTH = 400
 
-
+import matplotlib
 import tkinter as tk
 from tkinter import filedialog
 import pandas as pd
@@ -18,6 +18,8 @@ from tkinter import ttk
 
 
 def peak_finder(Series):
+        #Series = (Series[500:]).reset_index()
+       # print(Series)
         peak_1 = Series[0]
         time_1 = 0
         
@@ -27,7 +29,7 @@ def peak_finder(Series):
         diferenca1 = -1
         
         for i in range(Series.size-2):
-            if abs(peak_1 - Series[i]) > diferenca1:
+            if abs(peak_1 - Series[i]) > diferenca1*0.7:
                 diferenca1  = abs(peak_1 - Series[i])
             
             else:
@@ -48,39 +50,17 @@ def peak_finder(Series):
         
         return peak_1, time_1, peak_2, time_2
 
-# class First_Screen:
-#     def __init__(self, master):
-#         self.master = master
-#         self.size = tk.Canvas(self.master, height = HEIGHT, width = WIDTH)
-#         self.size.pack()
-#         self.frame = tk.Frame(self.master, bg = "#F0F0F0",highlightbackground="grey", highlightthickness=1)
-
-#         self.frame.place(relx = 0.05, rely = 0.05, relheight = 0.9, relwidth = 0.9)
-        
-#         self.substance = ttk.Label(self.frame, bg = "#bdbdbd", font = 20, highlightbackground="grey", highlightthickness=1)
-#         self.substance['text'] = "Enter substance molecular formula"
-#         self.substance.place(anchor = "n", relx = 0.5, rely=0.01, relheight = 0.1, relwidth = 0.9)
-
-#         self.substance_entry_box = ttk.Entry(self.frame, bg = "#bdbdbd", font = 40)
-#         self.substance_entry_box.place(anchor = "n", relx = 0.5, rely=0.2, relheight = 0.1, relwidth = 0.25)
-        
-#         self.Screen1_buttonEnter = ttk.Button(self.frame, text = "Enter", font = 20, command = lambda: self.new_window())
-#         self.Screen1_buttonEnter.place(anchor ="n", rely = 0.9, relx = 0.1, relwidth = 0.2, relheight = 0.1)
-
-#     def new_window(self):
-#         self.newWindow = ttk.Toplevel(self.master)
-#         self.size = ttk.Canvas(self.newWindow, height = HEIGHT, width = WIDTH)
-#         self.size.pack()
-#         self.app = Second_Screen(self.newWindow,self.substance_entry_box.get())
-
 
 class Second_Screen:
     def __init__(self, master):
+        
         self.master = master
         self.size = tk.Canvas(self.master, height = HEIGHT, width = WIDTH)
         self.size.pack()
         s = ttk.Style()
         s.configure('TFrame', relief="groove", background="#F0F0F0")
+
+
         
         self.keys = ttk.Frame(self.master, style="TFrame")
         self.keys.place(relx = 0.05, rely = 0.05, relheight = 0.9, relwidth = 0.9)
@@ -176,14 +156,15 @@ class Second_Screen:
         self.Phase.place(anchor = "ne", relx = Label_Title_X, rely=space*5*mover, relheight = 0.1, relwidth = Label_Title_Width)
         
 
-        
         s.configure('TButton', font=('Calibri', 12))
         s.configure('TButton', foreground="blue")
+        #s.configure('TButton', background="white")
+
         
         buttonEnter = ttk.Button(self.keys, text = "Enter", command = lambda: self.update_data())
         buttonEnter.place(anchor ="n", rely = 0.88, relx = 0.5, relwidth = 0.2, relheight = 0.1)
         
-        buttonFile = ttk.Button(self.keys, text = "Browser File", command = lambda: self.get_file_adress())
+        buttonFile = ttk.Button(self.keys, text = "Browser File", command = lambda: self.get_file_adress(),style="TButton")
         buttonFile.place(anchor ="n", rely = 0.14, relx = 0.5, relwidth = 0.4, relheight = 0.1)
         
         Quit_button = tk.Button(self.keys, text="Quit", fg='#f00', command=self.close_windows)
@@ -192,6 +173,7 @@ class Second_Screen:
     
     def update_data(self):
         self.DF = pd.read_csv(self.file_name)
+        #self.DF = self.DF.iloc[-500:,:].reset_index()
         self.time_sample = float(self.Sample_time_entry_box.get())/1000
         self.peak_value_time()
         self.myLabelT['text'] = round(self.period,5)
@@ -202,65 +184,17 @@ class Second_Screen:
 
         
     def peak_value_time(self):
-        peak_Y = self.DF["Y"][0]
-        time_Y = 0
-        
-        peak_Y2 = 0
-        time_Y2 = 0
-        
-        peak_U = self.DF["U"][0]
-        time_U = 0
-        
-        peak_U2 = 0
-        time_U2 = 0
-        diferenca1 = -1
-        
+
         
         # Determina diferença de picos
         '''----------------------------------------------------------------'''
+        #self.DF = self.DF.iloc[-500:,:]
+        peak_Y, time_Y,peak_Y2, time_Y2 = peak_finder(self.DF["Malha.Y"])
         
-        for i in range(self.DF["Y"].size-2):
-            if abs(peak_Y - self.DF["Y"][i]) > diferenca1:
-                diferenca1  = abs(peak_Y - self.DF["Y"][i])
-            
-            else:
-                peak_Y = self.DF["Y"][i-1]
-                time_Y = i-1
-                diferenca1 = -1
-                peak_Y2 = peak_Y
-                
-                while i < (self.DF["Y"].size-2):
-                    if abs(peak_Y2 - self.DF["Y"][i]) > diferenca1:
-                        diferenca1  = abs(peak_Y2 - self.DF["Y"][i])
-                    else:
-                        peak_Y2 = self.DF["Y"][i-1]
-                        time_Y2 = i-1
-                        break
-                    i+=1
-                break
-            
+        peak_U, time_U,peak_U2, time_U2 = peak_finder(self.DF["Malha.U"])
+        
         '''----------------------------------------------------------------'''
-        diferenca1 = -1
-        for j in range(self.DF["U"].size-2):
-            if abs(peak_U - self.DF["U"][j]) > diferenca1:
-                diferenca1  = abs(peak_U - self.DF["U"][j])
-            
-            else:
-                peak_U = self.DF["U"][j-1]
-                time_U = j-1
-                diferenca1 = -1
-                peak_U2 = peak_U
-                
-                while j < (self.DF["U"].size-2):
-                    if abs(peak_U2 - self.DF["U"][j]) > diferenca1:
-                        diferenca1  = abs(peak_U2 - self.DF["U"][j])
-                    else:
-                        peak_U2 = self.DF["U"][j-1]
-                        time_U2 = j-1
-                        break
-                    j+=1
-                break
-                    
+
         
         if peak_Y > peak_Y2:
             Y_Upper_Peak = peak_Y
@@ -285,15 +219,11 @@ class Second_Screen:
             U_Upper_Peak_Time = time_U2
             U_Lower_Peak_Time = time_U
         
-            
-        
-                
-        
-        #self.period = time_U2
+
+
         self.gain = 20*np.log10(abs(Y_Upper_Peak - Y_Lower_Peak)/abs(U_Upper_Peak - U_Lower_Peak))
         
         self.period = 2*abs(Y_Upper_Peak_Time-Y_Lower_Peak_Time)*self.time_sample
-        #self.period = time_Y
         
         self.phase = (360/self.period)*((U_Upper_Peak_Time - Y_Upper_Peak_Time)*self.time_sample)
         
@@ -308,6 +238,9 @@ class Second_Screen:
     
     def get_file_adress(self):
         self.file_name = tk.filedialog.askopenfilename()
+        
+    def smooth_curve(self):
+        self.DF
 
 
 
