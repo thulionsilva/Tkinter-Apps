@@ -9,6 +9,7 @@ HEIGHT = 600
 WIDTH = 800
 
 import multiprocessing
+import threading
 import re
 from pytube import Playlist
 from pytube import YouTube
@@ -17,7 +18,7 @@ import tkinter as tk
 from tkinter import filedialog
 
 def start_process(URL,itag,Folder):
-    p = multiprocessing.Process(target = Download_Video,args = (URL,itag,Folder))
+    p = threading.Thread(target = Download_Video,args = (URL,itag,Folder))
     p.start()
     return p
 
@@ -58,8 +59,10 @@ class First_Screen:
     def __init__(self, master):
         self.URL_Type = tk.IntVar()
         self.itag = tk.IntVar()
+        self.progress_value = tk.IntVar()
         self.URL_Type.set(1)
         self.itag.set(140)
+        self.progress_value.set(0)
         self.master = master
         self.size = tk.Canvas(self.master, height = HEIGHT, width = WIDTH)
         self.size.pack()
@@ -166,10 +169,8 @@ class First_Screen:
         self.buttonFolder = ttk.Button(self.keys, text = "Download folder", command = lambda: self.get_folder_adress())
         self.buttonFolder.place(anchor ="w", rely = 0.05, relx = 0.75, relwidth = 0.2, relheight = 0.08)
 
+ 
 
-
-
-        
     def start_download(self):
         URL = self.URL.get()
         itag = self.itag.get()
@@ -182,6 +183,7 @@ class First_Screen:
     def call_download_video(self):
         self.download_count = 0
         self.download_count_previous = 0
+        self.progress_value.set(0)
         self.Output_info.insert("end", "> Download started\n")
         self.Download_Video()
         
@@ -193,14 +195,16 @@ class First_Screen:
         Folder = self.DOWNLOAD_DIR
         
         if self.download_count == self.download_count_previous:
+            self.progress_bar = ttk.Progressbar(self.keys, maximum=len(self.playlist), variable = self.progress_value)
+            self.progress_bar.place(anchor ="c", rely = 0.8, relx = 0.5, relwidth = 0.5, relheight = 0.05)
             self.video = self.playlist.videos[self.download_count]
             self.download_count+=1
             p = start_process(self.video,itag,Folder)
             self.check_status(p)
 
         if self.download_count < len(self.playlist):
-            self.master.after(50, self.Download_Video)
-
+            self.master.after(500, self.Download_Video)
+        
             
         
     def get_folder_adress(self):
@@ -213,17 +217,17 @@ class First_Screen:
         if p.is_alive(): # Then the process is still running
             self.buttonEnter.config(state = "disabled")
             self.buttonFolder.config(state = "disabled")
-            self.master.after(50, lambda p=p: self.check_status(p)) # After 200 ms, it will check the status again.
+            self.master.after(500, lambda p=p: self.check_status(p)) # After 200 ms, it will check the status again.
 
         else:
-            self.buttonEnter.config(state = "normal")
-            self.buttonFolder.config(state = "normal")
             self.download_count_previous+=1
-            progress = self.download_count_previous+1
+            self.progress_value.set(self.download_count_previous)
             l = len(self.playlist)
             self.Output_info.insert("end", f"> {self.video.title} ({self.download_count_previous}/{l})\n") 
             if self.download_count >= len(self.playlist):
                 self.Output_info.insert("end", "> Download finished\n")
+                self.buttonEnter.config(state = "normal")
+                self.buttonFolder.config(state = "normal")
         
         
         
