@@ -33,10 +33,6 @@ def Download_Playlist(URL,itag,Folder):
 
     print(len(playlist.video_urls))
 
-    # for url in playlist.video_urls:
-    #     yt = YouTube(url)
-    #     yt.first().download()
-
     # physically downloading the audio track
 
     for video in playlist.videos:
@@ -45,6 +41,17 @@ def Download_Playlist(URL,itag,Folder):
             audioStream.download(output_path=Folder)
         except:
           print("Age restricted video")
+    return
+
+def Download_Video(URL,itag,Folder):
+
+    video = YouTube(URL)
+    try:
+        audioStream = video.streams.get_by_itag(str(itag))
+        audioStream.download(output_path=Folder)
+    except:
+      print("Age restricted video")
+      
     return
              
 class First_Screen:
@@ -145,6 +152,9 @@ class First_Screen:
         self.Progress_info = ttk.LabelFrame(self.keys, text="Download Status",style='OUT.TFrame')
         #self.myLabelT = ttk.Label(self.keys, style = "TLabel", borderwidth=4)
         self.Progress_info.place(anchor = "nw", relx = 0.5, rely=0.2, relheight = 0.52, relwidth = 0.4)
+        
+        self.Output_info = tk.Text(self.Progress_info)
+        self.Output_info.place(anchor="nw", relx = 0.01, rely = 0.01, relheight = 0.97, relwidth = 0.97)
 
         '''=========================================================================='''
         '''=========================================================================='''
@@ -164,47 +174,31 @@ class First_Screen:
         URL = self.URL.get()
         itag = self.itag.get()
         Folder = self.DOWNLOAD_DIR
-        p = start_process(URL,itag,Folder)
+        self.download_count = 0
+        self.download_count_previous = 0
+        
+        if self.download_count > self.download_count_previous:
+            p = start_process(URL,itag,Folder)
         
         self.check_status(p)
 
     
     def Download_Video(self):
+        URL = self.URL.get()
+        video = YouTube(URL)
+        itag = self.itag.get()
+        Folder = self.DOWNLOAD_DIR
+        p = start_process(URL,itag,Folder)
 
-        self.peak_value_time()
-
-    def Download_Playlist_v2(self,URL,itag,Folder):
-        
-        YOUTUBE_STREAM_AUDIO = '140' # modify the value to download a different stream
-
-        '''https://www.youtube.com/playlist?list=PLA9CBDEE2C2E735FE'''
-        playlist = Playlist(URL)
-
-        # this fixes the empty playlist.videos list
-        playlist._video_regex = re.compile(r"\"url\":\"(/watch\?v=[\w-]*)")
-
-        print(len(playlist.video_urls))
-
-        # for url in playlist.video_urls:
-        #     yt = YouTube(url)
-        #     yt.first().download()
-
-        # physically downloading the audio track
-
-        for video in playlist.videos:
-            try:
-                audioStream = video.streams.get_by_itag(str(itag))
-                audioStream.download(output_path=Folder)
-            except:
-              print("Age restricted video")
-        
+        self.check_status(p)
 
         
     def get_folder_adress(self):
         self.DOWNLOAD_DIR = tk.filedialog.askdirectory()
-        self.folder_selected= ttk.Label(self.Progress_info, style="W.TLabel")
-        self.folder_selected['text'] = f"Folder path: {self.DOWNLOAD_DIR}"
-        self.folder_selected.place(anchor = "w", relx = 0.05, rely=0.05, relheight = 0.09, relwidth = 0.9)
+        #self.folder_selected= ttk.Label(self.Progress_info, style="W.TLabel")
+        #self.folder_selected['text'] = f"Folder path: {self.DOWNLOAD_DIR}"
+        #self.folder_selected.place(anchor = "w", relx = 0.05, rely=0.05, relheight = 0.09, relwidth = 0.9)
+        self.Output_info.insert("end", f"Folder path: {self.DOWNLOAD_DIR}\n")
         
     
     def check_status(self,p):
