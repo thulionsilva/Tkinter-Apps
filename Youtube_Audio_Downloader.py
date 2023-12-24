@@ -122,7 +122,7 @@ class First_Screen:
         ''' ---------------------  Label para escolher playlist-video -------------------------'''
         self.video_playlist_selector_frame = ttk.LabelFrame(self.keys,style='TFrame',text="Playlist")
         self.video_playlist_selector_frame['text'] = "Select type "
-        self.video_playlist_selector_frame.place(anchor = "nw", relx = 0.1, rely=0.2, relheight = 0.2, relwidth = 0.25)
+        self.video_playlist_selector_frame.place(anchor = "nw", relx = 0.05, rely=0.2, relheight = 0.2, relwidth = 0.25)
         
         self.playlist_radio_button = ttk.Radiobutton(self.video_playlist_selector_frame,text="Playlist", value = 1, variable = self.URL_Type)
         self.playlist_radio_button.place(anchor = "nw", relx = 0.1, rely=0.15, relheight = 0.2, relwidth = 0.5)
@@ -135,7 +135,7 @@ class First_Screen:
         
         self.quality_selector = ttk.LabelFrame(self.keys, text="Quality",style='OUT.TFrame')
         #self.myLabelT = ttk.Label(self.keys, style = "TLabel", borderwidth=4)
-        self.quality_selector.place(anchor = "nw", relx = 0.1, rely=0.42, relheight = 0.3, relwidth = 0.25)
+        self.quality_selector.place(anchor = "nw", relx = 0.05, rely=0.42, relheight = 0.3, relwidth = 0.25)
         
         self.Audio_only_radio_button = ttk.Radiobutton(self.quality_selector,text="Audio Only", value = 140, variable = self.itag)
         self.Audio_only_radio_button.place(anchor = "nw", relx = 0.1, rely=0.15, relheight = 0.2, relwidth = 0.5)
@@ -152,12 +152,12 @@ class First_Screen:
 
 
 
-        self.Progress_info = ttk.LabelFrame(self.keys, text="Download Status",style='OUT.TFrame')
+        #self.Progress_info = ttk.LabelFrame(self.keys, text="Download Status",style='OUT.TFrame')
         #self.myLabelT = ttk.Label(self.keys, style = "TLabel", borderwidth=4)
-        self.Progress_info.place(anchor = "nw", relx = 0.37, rely=0.2, relheight = 0.52, relwidth = 0.6)
+        #self.Progress_info.place(anchor = "nw", relx = 0.37, rely=0.2, relheight = 0.52, relwidth = 0.6)
         
-        self.Output_info = tk.Text(self.Progress_info, state = "disabled")
-        self.Output_info.place(anchor="nw", relx = 0.02, rely = 0.01, relheight = 0.97, relwidth = 0.97)
+        self.Output_info = tk.Text(self.keys, state = "disabled",borderwidth=1,relief='sunken')
+        self.Output_info.place(anchor="nw", relx = 0.32, rely = 0.215, relheight = 0.505, relwidth = 0.625)
 
         '''=========================================================================='''
         '''=========================================================================='''
