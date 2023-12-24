@@ -17,7 +17,7 @@ import tkinter as tk
 from tkinter import filedialog
 
 def start_process(URL,itag,Folder):
-    p = multiprocessing.Process(target = Download_Playlist,args = (URL,itag,Folder))
+    p = multiprocessing.Process(target = Download_Video,args = (URL,itag,Folder))
     p.start()
     return p
 
@@ -45,7 +45,7 @@ def Download_Playlist(URL,itag,Folder):
 
 def Download_Video(URL,itag,Folder):
 
-    video = YouTube(URL)
+    video = URL
     try:
         audioStream = video.streams.get_by_itag(str(itag))
         audioStream.download(output_path=Folder)
@@ -151,16 +151,16 @@ class First_Screen:
 
         self.Progress_info = ttk.LabelFrame(self.keys, text="Download Status",style='OUT.TFrame')
         #self.myLabelT = ttk.Label(self.keys, style = "TLabel", borderwidth=4)
-        self.Progress_info.place(anchor = "nw", relx = 0.5, rely=0.2, relheight = 0.52, relwidth = 0.4)
+        self.Progress_info.place(anchor = "nw", relx = 0.37, rely=0.2, relheight = 0.52, relwidth = 0.6)
         
         self.Output_info = tk.Text(self.Progress_info)
-        self.Output_info.place(anchor="nw", relx = 0.01, rely = 0.01, relheight = 0.97, relwidth = 0.97)
+        self.Output_info.place(anchor="nw", relx = 0.02, rely = 0.01, relheight = 0.97, relwidth = 0.97)
 
         '''=========================================================================='''
         '''=========================================================================='''
 
         
-        self.buttonEnter = ttk.Button(self.keys, text = "Enter", command = lambda: self.start_download())
+        self.buttonEnter = ttk.Button(self.keys, text = "Enter", command = lambda: self.call_download_video())
         self.buttonEnter.place(anchor ="center", rely = 0.92, relx = 0.5, relwidth = 0.2, relheight = 0.1)
         
         self.buttonFolder = ttk.Button(self.keys, text = "Download folder", command = lambda: self.get_folder_adress())
@@ -174,24 +174,37 @@ class First_Screen:
         URL = self.URL.get()
         itag = self.itag.get()
         Folder = self.DOWNLOAD_DIR
+
+        p = start_process(URL,itag,Folder)
+        
+        self.check_status(p)
+
+    def call_download_video(self):
         self.download_count = 0
         self.download_count_previous = 0
+        self.Output_info.insert("end", "Download started\n")
+        self.Download_Video()
         
-        if self.download_count > self.download_count_previous:
-            p = start_process(URL,itag,Folder)
-        
-        self.check_status(p)
-
-    
     def Download_Video(self):
         URL = self.URL.get()
-        video = YouTube(URL)
+        playlist = Playlist(URL)
+        playlist._video_regex = re.compile(r"\"url\":\"(/watch\?v=[\w-]*)")
         itag = self.itag.get()
         Folder = self.DOWNLOAD_DIR
-        p = start_process(URL,itag,Folder)
+        
+        if self.download_count == self.download_count_previous:
+            self.video = playlist.videos[self.download_count]
+            self.download_count+=1
+            p = start_process(self.video,itag,Folder)
+            self.check_status(p)
 
-        self.check_status(p)
 
+        if self.download_count < len(playlist):
+            l = len(playlist)
+            self.master.after(200, self.Download_Video)
+        else:
+            self.Output_info.insert("end", "Download finished\n")
+            
         
     def get_folder_adress(self):
         self.DOWNLOAD_DIR = tk.filedialog.askdirectory()
@@ -208,15 +221,14 @@ class First_Screen:
             self.buttonEnter.config(state = "disabled")
             self.buttonFolder.config(state = "disabled")
             self.master.after(200, lambda p=p: self.check_status(p)) # After 200 ms, it will check the status again.
+
             
-            self.downloading= ttk.Label(self.Progress_info, style="W.TLabel")
-            self.downloading['text'] = "Downloading"
-            self.downloading.place(anchor = "w", relx = 0.05, rely=0.15, relheight = 0.09, relwidth = 0.55)
         else:
             #label.config(text = "MP Not Running")
             self.buttonEnter.config(state = "normal")
             self.buttonFolder.config(state = "normal")
-            self.downloading['text'] = "Download finished"
+            self.Output_info.insert("end", f"{self.video.title}\n") 
+            self.download_count_previous+=1
         
         
         
