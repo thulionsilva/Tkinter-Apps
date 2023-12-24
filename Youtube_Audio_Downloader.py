@@ -156,7 +156,7 @@ class First_Screen:
         #self.myLabelT = ttk.Label(self.keys, style = "TLabel", borderwidth=4)
         self.Progress_info.place(anchor = "nw", relx = 0.37, rely=0.2, relheight = 0.52, relwidth = 0.6)
         
-        self.Output_info = tk.Text(self.Progress_info)
+        self.Output_info = tk.Text(self.Progress_info, state = "disabled")
         self.Output_info.place(anchor="nw", relx = 0.02, rely = 0.01, relheight = 0.97, relwidth = 0.97)
 
         '''=========================================================================='''
@@ -184,7 +184,9 @@ class First_Screen:
         self.download_count = 0
         self.download_count_previous = 0
         self.progress_value.set(0)
+        self.Output_info.config(state="normal")
         self.Output_info.insert("end", "> Download started\n")
+        self.Output_info.config(state="disabled")
         self.Download_Video()
         
     def Download_Video(self):
@@ -209,7 +211,9 @@ class First_Screen:
         
     def get_folder_adress(self):
         self.DOWNLOAD_DIR = tk.filedialog.askdirectory()
+        self.Output_info.config(state="normal")
         self.Output_info.insert("end", f"> Folder path: {self.DOWNLOAD_DIR}\n")
+        self.Output_info.config(state="disabled")
         
     
     def check_status(self,p):
@@ -223,12 +227,14 @@ class First_Screen:
             self.download_count_previous+=1
             self.progress_value.set(self.download_count_previous)
             l = len(self.playlist)
+            self.Output_info.config(state="normal")
             self.Output_info.insert("end", f"> {self.video.title} ({self.download_count_previous}/{l})\n") 
             if self.download_count >= len(self.playlist):
                 self.Output_info.insert("end", "> Download finished\n")
                 self.buttonEnter.config(state = "normal")
                 self.buttonFolder.config(state = "normal")
-        
+            
+            self.Output_info.config(state="disabled")
         
         
 if __name__ == "__main__":
