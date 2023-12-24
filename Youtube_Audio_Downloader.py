@@ -182,53 +182,48 @@ class First_Screen:
     def call_download_video(self):
         self.download_count = 0
         self.download_count_previous = 0
-        self.Output_info.insert("end", "Download started\n")
+        self.Output_info.insert("end", "> Download started\n")
         self.Download_Video()
         
     def Download_Video(self):
         URL = self.URL.get()
-        playlist = Playlist(URL)
-        playlist._video_regex = re.compile(r"\"url\":\"(/watch\?v=[\w-]*)")
+        self.playlist = Playlist(URL)
+        self.playlist._video_regex = re.compile(r"\"url\":\"(/watch\?v=[\w-]*)")
         itag = self.itag.get()
         Folder = self.DOWNLOAD_DIR
         
         if self.download_count == self.download_count_previous:
-            self.video = playlist.videos[self.download_count]
+            self.video = self.playlist.videos[self.download_count]
             self.download_count+=1
             p = start_process(self.video,itag,Folder)
             self.check_status(p)
 
+        if self.download_count < len(self.playlist):
+            self.master.after(50, self.Download_Video)
 
-        if self.download_count < len(playlist):
-            l = len(playlist)
-            self.master.after(200, self.Download_Video)
-        else:
-            self.Output_info.insert("end", "Download finished\n")
             
         
     def get_folder_adress(self):
         self.DOWNLOAD_DIR = tk.filedialog.askdirectory()
-        #self.folder_selected= ttk.Label(self.Progress_info, style="W.TLabel")
-        #self.folder_selected['text'] = f"Folder path: {self.DOWNLOAD_DIR}"
-        #self.folder_selected.place(anchor = "w", relx = 0.05, rely=0.05, relheight = 0.09, relwidth = 0.9)
-        self.Output_info.insert("end", f"Folder path: {self.DOWNLOAD_DIR}\n")
+        self.Output_info.insert("end", f"> Folder path: {self.DOWNLOAD_DIR}\n")
         
     
     def check_status(self,p):
         """ p is the multiprocessing.Process object """
         if p.is_alive(): # Then the process is still running
-            #label.config(text = "MP Running")
             self.buttonEnter.config(state = "disabled")
             self.buttonFolder.config(state = "disabled")
-            self.master.after(200, lambda p=p: self.check_status(p)) # After 200 ms, it will check the status again.
+            self.master.after(50, lambda p=p: self.check_status(p)) # After 200 ms, it will check the status again.
 
-            
         else:
-            #label.config(text = "MP Not Running")
             self.buttonEnter.config(state = "normal")
             self.buttonFolder.config(state = "normal")
-            self.Output_info.insert("end", f"{self.video.title}\n") 
             self.download_count_previous+=1
+            progress = self.download_count_previous+1
+            l = len(self.playlist)
+            self.Output_info.insert("end", f"> {self.video.title} ({self.download_count_previous}/{l})\n") 
+            if self.download_count >= len(self.playlist):
+                self.Output_info.insert("end", "> Download finished\n")
         
         
         
