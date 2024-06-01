@@ -22,9 +22,6 @@ import pandas as pd
 import numpy as np
 from tkinter import ttk
 from scipy.fft import fft, fftfreq
-#import pyexcel_xlsx
-#import pyexcel_ods
-#import XlsxWriter
 
 class Main_Screen:
     def __init__(self, master):
@@ -98,7 +95,6 @@ class Main_Screen:
         s.configure('W.TLabel', background = "#F0F0F0")
         s.configure('W.TLabel', relief="flat")
         
-        #self.Sample_time = ttk.Label(self.keys, bg = "#F0F0F0", font = Font_tuple, highlightbackground="grey", highlightthickness=0)
         self.Sample_time = ttk.Label(self.keys, style="W.TLabel")
 
         self.Sample_time['text'] = "Sampling Time (ms): "
@@ -119,7 +115,6 @@ class Main_Screen:
         '''-------------------- Label com o nome do dados -----------------------------'''
         
         s.configure('NAME.TLabel',  font=('Calibri', 12))
-        #s.configure('Red.TLabel', foreground ='red')
         s.configure('NAME.TLabel', anchor=tk.CENTER)
         s.configure('NAME.TLabel', background='#E5E5E5')
         s.configure('NAME.TLabel', anchor='center')
@@ -146,7 +141,6 @@ class Main_Screen:
 
         s.configure('TButton', font=('Calibri', 12))
         s.configure('TButton', foreground="blue")
-        #s.configure('TButton', background="white")
 
         #buttonPlotSignal = ttk.Button(self.progress, text = "Plot Sine", command = lambda: self.plot_signal())
         #buttonPlotSignal.place(anchor ="w", rely = 0.5, relx = 0.05, relwidth = 0.15, relheight = 0.7)
@@ -202,14 +196,11 @@ class Main_Screen:
         
         if self.phase <= 0:
             self.Bode.loc[len(self.Bode)] = [round(self.frequency,2), round(self.gain,2), round(self.phase,2)]
-            #self.Bode.loc[round(self.frequency,2)] = [round(self.gain,2), round(self.phase,2)]
 
             self.Bode.sort_values(by="Frequency (rad/s)", inplace=True)
             self.Output_info.config(state="normal")
-            #self.Output_info.insert("end", f"> {video.title} ({self.download_count}/{l})\n") 
             self.Output_info.delete("1.0","end")
             self.Output_info.insert("end", f"{self.Bode} \n") 
-            #self.Output_info.insert("end", f"> {self.Bode[['Frequency (rad/s)', 'Gain (dB)', 'Phase (º)']]}\n") 
             self.Output_info.config(state="disabled")
 
 
@@ -299,8 +290,10 @@ class Main_Screen:
 
         toplevel = tk.Toplevel(self.master)
         canvas = FigureCanvasTkAgg(fig, master=toplevel)
-        canvas.get_tk_widget().pack()
+        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
         canvas.draw()
+        toolbar = NavigationToolbar2Tk(canvas, toplevel)
+        toolbar.update()
 
     def bode_plot(self):
         #fig, ax = plt.subplots(2,1,figsize=(10,7))
@@ -378,15 +371,6 @@ root.iconbitmap('C:\\Users\\thuli\\OneDrive\\Área de Trabalho\\Tkinter Programs
 
 clas = Main_Screen(root)
 
-'''--------------------- Destroy window function -------------------------'''
-
-'''-----------------------------------------------------------------------'''
-
-
 root.mainloop()
 
-
-
-
-#print("{}{}".format(nome,sobrenome))
 
