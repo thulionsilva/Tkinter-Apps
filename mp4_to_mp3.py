@@ -141,7 +141,7 @@ Output_info.place(anchor="n", relx = 0.5, rely = 0.45, relheight = 0.5, relwidth
 
 '''==============================================================================================================='''
 def convert():
-    directory_string = "C:\\Users\\thuli\\Music\\Tayronne Cigano - 20 Melhores"
+    directory_string = "C:\\Users\\thuli\\Music\\Kara Véia - O rei da Vaquejada"
     directory = os.fsencode(directory_string)
         
     for file in os.listdir(directory):
@@ -159,8 +159,8 @@ def convert():
 
 
 if __name__ == "__main__":
-
-    root.mainloop()
+    convert()
+    #root.mainloop()
 
 #video = VideoFileClip(os.path.join("path","to","movie.mp4"))
 

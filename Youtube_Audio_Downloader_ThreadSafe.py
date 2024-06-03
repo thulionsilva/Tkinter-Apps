@@ -122,7 +122,7 @@ class First_Screen:
         self.Audio_only_radio_button.place(anchor = "nw", relx = 0.1, rely=0.15, relheight = 0.2, relwidth = 0.5)
         
         self.p1080_radio_button = ttk.Radiobutton(self.quality_selector,text="High Resolution", value = 137, variable = self.itag)
-        self.p1080_radio_button.place(anchor = "nw", relx = 0.1, rely=0.3, relheight = 0.2, relwidth = 0.5)
+        self.p1080_radio_button.place(anchor = "nw", relx = 0.1, rely=0.3, relheight = 0.2, relwidth = 0.6)
         
         #self.p720_radio_button = ttk.Radiobutton(self.quality_selector,text="720p Video", value = 22, variable = self.itag)
         #self.p720_radio_button.place(anchor = "nw", relx = 0.1, rely=0.45, relheight = 0.2, relwidth = 0.5)
@@ -144,14 +144,19 @@ class First_Screen:
         '''=========================================================================='''
 
         
-        self.buttonEnter = ttk.Button(self.keys, text = "Enter", command = lambda: self.innit_Download_Playlist())
+        self.buttonEnter = ttk.Button(self.keys, text = "Enter", command = lambda: self.init_download())
         self.buttonEnter.place(anchor ="center", rely = 0.92, relx = 0.5, relwidth = 0.2, relheight = 0.1)
         
         self.buttonFolder = ttk.Button(self.keys, text = "Download folder", command = lambda: self.get_folder_adress())
         self.buttonFolder.place(anchor ="w", rely = 0.09, relx = 0.75, relwidth = 0.2, relheight = 0.08)
 
- 
-    def innit_Download_Playlist(self):
+    def init_download(self):
+        if self.URL_Type.get() == 1:
+            self.init_Download_Playlist()
+        else:
+            self.call_sigle_download_video()
+
+    def init_Download_Playlist(self):
 
         self.playlist = Playlist(self.URL.get())
         self.download_count = -1
@@ -196,41 +201,22 @@ class First_Screen:
             self.buttonFolder.config(state = "normal")
         else:
             try:
-                start_time = time.time()
                 video = self.playlist.videos[self.download_count]
 
                 self.Output_info.config(state="normal")
-
-                start_time = time.time()
                 title = video.title
-                print(title)
-                print((time.time()-start_time)*1000, "ms - tempo pegando title")
-                start_time = time.time()
                 self.Output_info.insert("end", f"> {title} ({self.download_count+1}/{self.playlist_length})\n") 
-                print((time.time()-start_time)*1000, "ms - tempo atualizando textbox")
-                start_time = time.time()
                 self.Output_info.config(state="disabled")
 
                 itag = self.itag.get()
 
-                
-                #print(f"> {video.title} ({self.download_count}/{self.playlist_length})\n")
                 t = threading.Thread(target = self.video_download_thread, args = [video,itag])
-                #print((time.time()-start_time)*1000, "ms - tempo creando thread")
-                #start_time = time.time()
-
-
                 t.start()
-                #print((time.time()-start_time)*1000, "ms - tempo starting thread")
-                #start_time = time.time()
-                
                 self.check_status(t)
-                #print((time.time()-start_time)*1000, "ms - tempo checking thread")
-                #start_time = time.time()
+
             except Exception as e:
                 print("A error occurred", e)
-        
-        #print(" (1) leaving new_download\n")
+
         return
     
     def video_download_thread(self, video, itag):
@@ -239,22 +225,38 @@ class First_Screen:
 
         if itag == 137:
             audioStream = video.streams.get_highest_resolution()
-        #t = threading.Thread(target = self.Download_Playlist)
-        #print("(2) entered video_download_thread\n")
         audioStream.download(output_path=self.DOWNLOAD_DIR)
-        #print("(2) leaving video_download_thread\n")
         return
 
 
 
-    def call_download_video(self):
-        self.download_count = 0
-        self.download_count_previous = 0
-        self.progress_value.set(0)
+    def call_sigle_download_video(self):
+
         self.Output_info.config(state="normal")
         self.Output_info.insert("end", "> Download started\n")
+        print("Download started\n")
         self.Output_info.config(state="disabled")
-        self.Download_Video()
+        self.buttonEnter.config(state = "disabled")
+        self.buttonFolder.config(state = "disabled")
+
+        try:
+            video = YouTube(self.URL.get())
+
+            self.Output_info.config(state="normal")
+            title = video.title
+            self.Output_info.insert("end", f"> {title}\n") 
+            self.Output_info.config(state="disabled")
+
+            itag = self.itag.get()
+
+            t = threading.Thread(target = self.video_download_thread, args = [video,itag])
+            t.start()
+            self.check_status_2(t)
+
+        except Exception as e:
+            print("A error occurred", e)
+
+        return
         
     def Download_Video(self):
         URL = self.URL.get()
@@ -283,17 +285,27 @@ class First_Screen:
     def check_status(self,t):
         """ t is the threading.Thread object """
 
-        #print("(3) entered check_status\n")
         if t.is_alive(): # Then the process is still running
-           # print("(3) thread alive\n")
             self.master.after(2000, lambda t=t: self.check_status(t)) # After 200 ms, it will check the status again.
         else:
-            #print("(3) thread dead\n")
+
             self.new_download()
 
-        #print("(3) leaving check_status\n")
         return
-        
+    
+    def check_status_2(self,t):
+        """ t is the threading.Thread object """
+
+        if t.is_alive(): # Then the process is still running
+            self.master.after(2000, lambda t=t: self.check_status_2(t)) # After 200 ms, it will check the status again.
+        else:
+            self.Output_info.config(state="normal")
+            self.Output_info.insert("end", "> Download finished\n")
+            self.Output_info.config(state="disabled")
+            self.buttonEnter.config(state = "normal")
+            self.buttonFolder.config(state = "normal")
+
+        return
         
 if __name__ == "__main__":
     root = tk.Tk()
